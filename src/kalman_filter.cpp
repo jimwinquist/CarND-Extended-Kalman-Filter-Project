@@ -1,5 +1,8 @@
 #include "kalman_filter.h"
 
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+
 KalmanFilter::KalmanFilter() {}
 
 KalmanFilter::~KalmanFilter() {}
@@ -38,7 +41,23 @@ void KalmanFilter::Update(const VectorXd &z) {
   P_ = (I - K * H_) * P_;
 }
 
-void KalmanFilter::UpdateWithAlreadyPredictedMeasurements(const VectorXd& z, const VectorXd& z_pred) {
+void KalmanFilter::UpdateEKF(const VectorXd &z) {
+  //pre-compute a set of terms to avoid repeated calculation
+  float px = x_[0];
+  float py = x_[1];
+  float vx = x_[2];
+  float vy = x_[3];
+  float c1 = px*px + py*py;
+  float c2 = px*vx;
+  float c3 = py*vy;
+
+  float range = sqrt(c1);
+  float bearing = atan(py / px);
+  float rangeRate = (c2 + c3) / range;
+
+  VectorXd z_pred(3);
+  z_pred << range, bearing, rangeRate;
+
   //Update the state by using extended kalman filter equations
   VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();

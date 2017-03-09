@@ -1,7 +1,4 @@
 #include "FusionEKF.h"
-#include "tools.h"
-#include "Eigen/Dense"
-#include <iostream>
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -34,12 +31,12 @@ FusionEKF::FusionEKF() {
              0, 0, 0, 1000;
 
   //measurement covariance
-  R_laser_ << 0.0225, 0,
-              0, 0.0225;
+  R_laser_ << 0.15, 0,
+              0, 0.15;
 
-  R_radar_ << 0.0225, 0, 0,
-              0, 0.0225, 0,
-              0, 0, 0.0225;
+  R_radar_ << 0.3, 0, 0,
+              0, 0.03, 0,
+              0, 0, 0.3;
 
   //measurement matrix
   H_laser_ << 1, 0, 0, 0,
@@ -129,22 +126,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     Hj_ = tools.CalculateJacobian(ekf_.x_);
     ekf_.H_ = Hj_;
 
-    //pre-compute a set of terms to avoid repeated calculation
-    float px = ekf_.x_[0];
-    float py = ekf_.x_[1];
-    float vx = ekf_.x_[2];
-    float vy = ekf_.x_[3];
-    float c1 = px*px + py*py;
-    float c2 = px*vx;
-    float c3 = py*vy;
-
-    float range = sqrt(c1);
-    float bearing = atan(py / px);
-    float rangeRate = (c2 + c3) / range;
-
-    VectorXd z_pred(3);
-    z_pred << range, bearing, rangeRate;
-    ekf_.UpdateWithAlreadyPredictedMeasurements(measurement_pack.raw_measurements_, z_pred);
+    ekf_.UpdateEKF(measurement_pack.raw_measurements_);
 
   } else {
     // Laser updates

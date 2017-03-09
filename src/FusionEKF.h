@@ -2,11 +2,13 @@
 #define FusionEKF_H_
 
 #include "measurement_package.h"
+#include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
 #include "kalman_filter.h"
 #include "tools.h"
+#include "Eigen/Dense"
 
 class FusionEKF {
 public:
@@ -43,10 +45,10 @@ private:
 
   // tool object used to compute Jacobian and RMSE
   Tools tools;
-  MatrixXd R_laser_;
-  MatrixXd R_radar_;
-  MatrixXd H_laser_;
-  MatrixXd Hj_;
+  Eigen::MatrixXd R_laser_;
+  Eigen::MatrixXd R_radar_;
+  Eigen::MatrixXd H_laser_;
+  Eigen::MatrixXd Hj_;
 };
 
 #endif /* FusionEKF_H_ */
