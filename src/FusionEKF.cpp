@@ -27,16 +27,16 @@ FusionEKF::FusionEKF() {
   ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
              0, 1, 0, 0,
-             0, 0, 10, 0,
-             0, 0, 0, 10;
+             0, 0, 100, 0,
+             0, 0, 0, 100;
 
   //measurement covariance
-  R_laser_ << 0.01, 0,
-              0, 0.01;
+  R_laser_ << 0.0225, 0,
+              0, 0.0225;
 
-  R_radar_ << 0.1, 0, 0,
-              0, 0.001, 0,
-              0, 0, 0.1;
+  R_radar_ << 0.0225, 0, 0,
+              0, 0.0225, 0,
+              0, 0, 0.0225;
 
   //measurement matrix
   H_laser_ << 1, 0, 0, 0,
@@ -54,8 +54,8 @@ FusionEKF::FusionEKF() {
              0, 0, 0, 1;
 
   //set the acceleration noise components
-  noise_ax = 100;
-  noise_ay = 100;
+  noise_ax = 10;
+  noise_ay = 10;
 }
 
 /**
@@ -78,13 +78,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       float px = range * cos(bearing);
       float py = range * sin(bearing);
 
-      if (px == 0 and py == 0) {
+      if (px == 0 or py == 0) {
         return;
       }
       ekf_.x_ << px, py, 0, 0;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      if (measurement_pack.raw_measurements_[0] == 0 and measurement_pack.raw_measurements_[1] == 0) {
+      if (measurement_pack.raw_measurements_[0] == 0 or measurement_pack.raw_measurements_[1] == 0) {
         return;
       }
       //set the state with the initial location and zero velocity
