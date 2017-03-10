@@ -27,16 +27,16 @@ FusionEKF::FusionEKF() {
   ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
              0, 1, 0, 0,
-             0, 0, 1000, 0,
-             0, 0, 0, 1000;
+             0, 0, 10, 0,
+             0, 0, 0, 10;
 
   //measurement covariance
-  R_laser_ << 0.15, 0,
-              0, 0.15;
+  R_laser_ << 0.01, 0,
+              0, 0.01;
 
-  R_radar_ << 0.3, 0, 0,
-              0, 0.03, 0,
-              0, 0, 0.3;
+  R_radar_ << 0.1, 0, 0,
+              0, 0.001, 0,
+              0, 0, 0.1;
 
   //measurement matrix
   H_laser_ << 1, 0, 0, 0,
@@ -54,8 +54,8 @@ FusionEKF::FusionEKF() {
              0, 0, 0, 1;
 
   //set the acceleration noise components
-  noise_ax = 5;
-  noise_ay = 5;
+  noise_ax = 100;
+  noise_ay = 100;
 }
 
 /**
@@ -77,9 +77,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       float bearing = measurement_pack.raw_measurements_[1];
       float px = range * cos(bearing);
       float py = range * sin(bearing);
+
+      if (px == 0 and py == 0) {
+        return;
+      }
       ekf_.x_ << px, py, 0, 0;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
+      if (measurement_pack.raw_measurements_[0] == 0 and measurement_pack.raw_measurements_[1] == 0) {
+        return;
+      }
       //set the state with the initial location and zero velocity
       ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
@@ -99,6 +106,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   cout << dt << endl;
   previous_timestamp_ = measurement_pack.timestamp_;
 
+
   float dt_2 = dt * dt;
   float dt_3 = dt_2 * dt;
   float dt_4 = dt_3 * dt;
@@ -111,8 +119,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   ekf_.Q_ = MatrixXd(4, 4);
   ekf_.Q_ << dt_4 / 4 * noise_ax, 0, dt_3 / 2 * noise_ax, 0,
       0, dt_4 / 4 * noise_ay, 0, dt_3 / 2 * noise_ay,
-      dt_3 / 2 * noise_ax, 0, dt_2*noise_ax, 0,
-      0, dt_3 / 2 * noise_ay, 0, dt_2*noise_ay;
+      dt_3 / 2 * noise_ax, 0, dt_2 * noise_ax, 0,
+      0, dt_3 / 2 * noise_ay, 0, dt_2 * noise_ay;
 
   ekf_.Predict();
 
