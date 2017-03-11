@@ -78,9 +78,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       float px = range * cos(bearing);
       float py = range * sin(bearing);
 
-      if (px == 0 or py == 0) {
-        return;
-      }
       ekf_.x_ << px, py, 0, 0;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
