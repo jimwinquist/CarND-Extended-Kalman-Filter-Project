@@ -22,6 +22,7 @@ FusionEKF::FusionEKF() {
   // Initialize FusionEKF state variables
   //create a 4D state vector, we don't know yet the values of the x state
   ekf_.x_ = VectorXd(4);
+  ekf_.x_ << 1, 1, 1, 1;
 
   //state covariance matrix P
   ekf_.P_ = MatrixXd(4, 4);
