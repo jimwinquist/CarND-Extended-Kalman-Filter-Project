@@ -1,3 +1,4 @@
+#include <cmath>
 #include "FusionEKF.h"
 
 using namespace std;
@@ -72,22 +73,27 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // first measurement
     cout << "EKF Initialization: " << endl;
 
+    float px;
+    float py;
+
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       //Convert radar from polar to cartesian coordinates and initialize state.
-      float range = measurement_pack.raw_measurements_[0];
-      float bearing = measurement_pack.raw_measurements_[1];
-      float px = range * cos(bearing);
-      float py = range * sin(bearing);
-
-      ekf_.x_ << px, py, 0, 0;
+      const float range = measurement_pack.raw_measurements_[0];
+      const float bearing = measurement_pack.raw_measurements_[1];
+      px = range * cos(bearing);
+      py = range * sin(bearing);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      if (measurement_pack.raw_measurements_[0] == 0 or measurement_pack.raw_measurements_[1] == 0) {
+      px = measurement_pack.raw_measurements_[0];
+      py = measurement_pack.raw_measurements_[1];
+
+      if (abs(px) < 0.000001 or abs(py) < 0.000001) {
         return;
       }
-      //set the state with the initial location and zero velocity
-      ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
+
+    //set the state with the initial location and zero velocity
+    ekf_.x_ << px, py, 0, 0;
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -103,7 +109,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
   cout << dt << endl;
   previous_timestamp_ = measurement_pack.timestamp_;
-
 
   float dt_2 = dt * dt;
   float dt_3 = dt_2 * dt;
