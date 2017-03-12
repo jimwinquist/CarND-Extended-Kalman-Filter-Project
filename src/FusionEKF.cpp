@@ -87,11 +87,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       px = measurement_pack.raw_measurements_[0];
       py = measurement_pack.raw_measurements_[1];
 
-    }
-
-    if (abs(px) < 0.000001 or abs(py) < 0.000001) {
-      px = 0.0001;
-      py = 0.0001;
+      if (abs(px) < 0.000001 or abs(py) < 0.000001) {
+        px = 0.00001;
+        py = 0.00001;
+      }
     }
 
     //set the state with the initial location and zero velocity
@@ -111,7 +110,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
   cout << dt << endl;
   previous_timestamp_ = measurement_pack.timestamp_;
-  
+
   float dt_2 = dt * dt;
   float dt_3 = dt_2 * dt;
   float dt_4 = dt_3 * dt;
